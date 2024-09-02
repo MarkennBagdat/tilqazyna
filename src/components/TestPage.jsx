@@ -17,7 +17,6 @@ const TestPage = () => {
     const loadTestData = async () => {
       try {
         const data = await fetchTestData(); // Получение данных с API
-        // Предполагается, что каждый вопрос имеет поле `difficulty` от 1 до 5
         const formattedData = data.map((question) => ({
           ...question,
           options: [
@@ -40,7 +39,7 @@ const TestPage = () => {
   useEffect(() => {
     // Фильтрация вопросов по текущему уровню сложности
     const filtered = questions.filter(
-      (question) => question.difficulty === difficultyLevel
+      (question) => question.options_level === difficultyLevel
     );
     setFilteredQuestions(filtered);
     setCurrentQuestionIndex(0);
@@ -58,6 +57,13 @@ const TestPage = () => {
       setDifficultyLevel(parseInt(storedDifficulty, 10));
     }
   }, []);
+
+  useEffect(() => {
+    // Установить время начала при загрузке первого вопроса или при смене вопроса
+    if (filteredQuestions.length > 0) {
+      setStartTime(Date.now());
+    }
+  }, [filteredQuestions, currentQuestionIndex]);
 
   if (filteredQuestions.length === 0) {
     return (
@@ -83,7 +89,7 @@ const TestPage = () => {
     if (
       selectedAnswer &&
       selectedAnswer.trim().toLowerCase() ===
-        filteredQuestions[currentQuestionIndex].correctOption
+        filteredQuestions[currentQuestionIndex].correct_option
           .trim()
           .toLowerCase()
     ) {
@@ -114,7 +120,6 @@ const TestPage = () => {
     setSelectedAnswer(null);
     if (currentQuestionIndex < filteredQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setStartTime(Date.now()); // Установить время начала для следующего вопроса
     } else {
       // Показать результаты после последнего вопроса
       setShowResults("final");
@@ -127,15 +132,7 @@ const TestPage = () => {
     setShowResults(false);
     setSelectedAnswer(null);
     setDifficultyLevel(3); // Сброс уровня сложности до начального
-    setStartTime(Date.now());
   };
-
-  useEffect(() => {
-    // Установить время начала при загрузке первого вопроса
-    if (filteredQuestions.length > 0 && currentQuestionIndex === 0) {
-      setStartTime(Date.now());
-    }
-  }, [filteredQuestions, currentQuestionIndex]);
 
   if (showResults === "final") {
     return (
@@ -157,7 +154,7 @@ const TestPage = () => {
       <TextQuestion
         question={currentData.question}
         options={currentData.options}
-        correctOption={currentData.correctOption}
+        correctOption={currentData.correct_option}
         selectedAnswer={selectedAnswer}
         showResults={showResults}
         onAnswerSelect={handleAnswerSelect}
