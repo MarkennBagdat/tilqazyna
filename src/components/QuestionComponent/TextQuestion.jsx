@@ -3,7 +3,7 @@ import React from "react";
 const TextQuestion = ({
   question,
   options,
-  correctOption,
+  correct_option,
   selectedAnswer,
   showResults,
   onAnswerSelect,
@@ -19,8 +19,8 @@ const TextQuestion = ({
             key={index}
             className={`option-button 
               ${selectedAnswer === option ? "selected" : ""} 
-              ${showResults && option === correctOption ? "correct" : ""} 
-              ${showResults && option === selectedAnswer && option !== correctOption ? "incorrect" : ""}`}  
+              ${showResults && option === correct_option ? "correct" : ""} 
+              ${showResults && option === selectedAnswer && option !== correct_option ? "incorrect" : ""}`}  
             onClick={() => onAnswerSelect(option)}
             disabled={showResults} // Disable buttons after checking the answer
           >

@@ -5,18 +5,18 @@ import { fetchTestData } from "../services/api";
 
 const TestPage = () => {
   const [questions, setQuestions] = useState([]);
-  const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [correctAnswers, setCorrectAnswers] = useState(0);
-  const [startTime, setStartTime] = useState(null);
-  const [difficultyLevel, setDifficultyLevel] = useState(3); // Начальный уровень сложности
+  const [responseTimes, setResponseTimes] = useState([]); // Сохраняем время ответов
+  const [startTime, setStartTime] = useState(null); // Начальное время для каждого вопроса
+  const [difficultyLevel, setDifficultyLevel] = useState(1); // Уровень сложности
 
   useEffect(() => {
     const loadTestData = async () => {
       try {
-        const data = await fetchTestData(); // Получение данных с API
+        const data = await fetchTestData();
         const formattedData = data.map((question) => ({
           ...question,
           options: [
@@ -28,44 +28,16 @@ const TestPage = () => {
           ],
         }));
         setQuestions(formattedData);
+        setStartTime(Date.now()); // Устанавливаем время начала первого вопроса
       } catch (error) {
-        console.error("Не удалось загрузить данные теста:", error);
+        console.error("Failed to load test data:", error);
       }
     };
 
     loadTestData();
   }, []);
 
-  useEffect(() => {
-    // Фильтрация вопросов по текущему уровню сложности
-    const filtered = questions.filter(
-      (question) => question.options_level === difficultyLevel
-    );
-    setFilteredQuestions(filtered);
-    setCurrentQuestionIndex(0);
-  }, [questions, difficultyLevel]);
-
-  useEffect(() => {
-    // Сохранение уровня сложности в локальном хранилище
-    localStorage.setItem("difficultyLevel", difficultyLevel);
-  }, [difficultyLevel]);
-
-  useEffect(() => {
-    // Загрузка уровня сложности из локального хранилища при инициализации
-    const storedDifficulty = localStorage.getItem("difficultyLevel");
-    if (storedDifficulty) {
-      setDifficultyLevel(parseInt(storedDifficulty, 10));
-    }
-  }, []);
-
-  useEffect(() => {
-    // Установить время начала при загрузке первого вопроса или при смене вопроса
-    if (filteredQuestions.length > 0) {
-      setStartTime(Date.now());
-    }
-  }, [filteredQuestions, currentQuestionIndex]);
-
-  if (filteredQuestions.length === 0) {
+  if (questions.length === 0) {
     return (
       <div className="loading-container">
         <img
@@ -78,50 +50,66 @@ const TestPage = () => {
     );
   }
 
+  const calculateDifficultyLevel = (currentIndex) => {
+    if (currentIndex === 1 || currentIndex === 2) {
+      return 1;
+    }
+
+    if (currentIndex >= 3 && currentIndex <= 5) {
+      const avgTime = responseTimes.slice(0, 2).reduce((a, b) => a + b, 0) / 2;
+      if (avgTime <= 5) return 3;
+      if (avgTime <= 10) return 2;
+      return 1;
+    }
+
+    if (currentIndex >= 6 && currentIndex <= 8) {
+      const avgTime = responseTimes.slice(2, 5).reduce((a, b) => a + b, 0) / 3;
+      if (avgTime <= 3) return 5;
+      if (avgTime <= 5) return 4;
+      if (avgTime <= 7) return 3;
+      if (avgTime <= 10) return 2;
+      return 1;
+    }
+
+    if (currentIndex === 9 || currentIndex === 10) {
+      if (correctAnswers >= 7) return 5;
+      if (correctAnswers >= 6) return 4;
+      if (correctAnswers >= 5) return 3;
+      if (correctAnswers >= 4) return 2;
+      return 1;
+    }
+  };
+
   const handleAnswerSelect = (answer) => {
     setSelectedAnswer(answer);
   };
 
   const handleCheckAnswer = () => {
-    const endTime = Date.now();
-    const timeTaken = (endTime - startTime) / 1000; // Время в секундах
+    const currentTime = Date.now();
+    const timeSpent = (currentTime - startTime) / 1000; // Время в секундах
+    setResponseTimes([...responseTimes, timeSpent]);
 
     if (
       selectedAnswer &&
       selectedAnswer.trim().toLowerCase() ===
-        filteredQuestions[currentQuestionIndex].correct_option
-          .trim()
-          .toLowerCase()
+        questions[currentQuestionIndex].correct_option.trim().toLowerCase()
     ) {
       setCorrectAnswers(correctAnswers + 1);
     }
 
-    // Определение уровня сложности следующего вопроса
-    let newDifficultyLevel = difficultyLevel;
-
-    if (timeTaken < 5) {
-      newDifficultyLevel = 5;
-    } else if (timeTaken >= 5 && timeTaken < 10) {
-      newDifficultyLevel = 4;
-    } else if (timeTaken >= 10 && timeTaken < 15) {
-      newDifficultyLevel = 3;
-    } else if (timeTaken >= 15 && timeTaken < 20) {
-      newDifficultyLevel = 2;
-    } else {
-      newDifficultyLevel = 1;
-    }
-
-    setDifficultyLevel(newDifficultyLevel); // Сохранить новый уровень сложности
     setShowResults(true);
   };
 
   const handleNextQuestion = () => {
     setShowResults(false);
     setSelectedAnswer(null);
-    if (currentQuestionIndex < filteredQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+
+    if (currentQuestionIndex < questions.length - 1) {
+      const nextIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextIndex);
+      setDifficultyLevel(calculateDifficultyLevel(nextIndex)); // Рассчитать новый уровень сложности
+      setStartTime(Date.now()); // Обновить начальное время для следующего вопроса
     } else {
-      // Показать результаты после последнего вопроса
       setShowResults("final");
     }
   };
@@ -129,22 +117,24 @@ const TestPage = () => {
   const handleRestart = () => {
     setCurrentQuestionIndex(0);
     setCorrectAnswers(0);
+    setResponseTimes([]);
+    setDifficultyLevel(1);
     setShowResults(false);
     setSelectedAnswer(null);
-    setDifficultyLevel(3); // Сброс уровня сложности до начального
+    setStartTime(Date.now());
   };
 
   if (showResults === "final") {
     return (
       <ResultPage
         correctAnswers={correctAnswers}
-        totalQuestions={filteredQuestions.length}
+        totalQuestions={questions.length}
         onRestart={handleRestart}
       />
     );
   }
 
-  const currentData = filteredQuestions[currentQuestionIndex];
+  const currentData = questions[currentQuestionIndex];
 
   return (
     <div className="test-page">
@@ -154,7 +144,7 @@ const TestPage = () => {
       <TextQuestion
         question={currentData.question}
         options={currentData.options}
-        correctOption={currentData.correct_option}
+        correct_option={currentData.correct_option}
         selectedAnswer={selectedAnswer}
         showResults={showResults}
         onAnswerSelect={handleAnswerSelect}
