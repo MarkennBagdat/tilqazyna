@@ -1,14 +1,21 @@
 import React, { useState } from "react";
-import BerkutRes from "../../styles/photos/berkutreg.webp"; // Убедитесь, что путь к изображению правильный
-import GoogleLogo from "../../styles/photos/Logo/googleLogo.png"
+import { useNavigate } from 'react-router-dom'; // Импортируем useNavigate
+import BerkutRes from "../../styles/photos/berkutreg.webp"; 
+import GoogleLogo from "../../styles/photos/Logo/googleLogo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate(); // Инициализируем useNavigate
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Email:", email, "Password:", password);
+  };
+
+  // Обработчик для кнопки "Тестке өту"
+  const handleTestNavigation = () => {
+    navigate('/test'); // Переход на страницу теста
   };
 
   return (
@@ -22,7 +29,7 @@ const Login = () => {
             <div className="login-card">
               <div className="login-header">
                 <button className="login-tab active">Кіру</button>
-                <button className="login-tab">Тіркелу</button>
+                <button className="login-tab" onClick={() => navigate('/registr')}>Тіркелу</button>
               </div>
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -60,8 +67,12 @@ const Login = () => {
               </form>
               <div className="login-alternatives">
                 <button className="google-login">
-                  <img src={GoogleLogo} />
+                  <img src={GoogleLogo} alt="Google" />
                   Googleмен жалғастыру
+                </button>
+                {/* Добавляем обработчик для перехода на страницу теста */}
+                <button className="google-login" onClick={handleTestNavigation}>
+                  Тестке өту
                 </button>
               </div>
             </div>
