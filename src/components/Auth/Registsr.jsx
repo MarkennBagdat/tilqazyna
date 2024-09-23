@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom'; // Импортируем useNavigate
-import BerkutRes from "../../styles/photos/berkutreg.webp"; 
+import BerkutRes from "../../styles/photos/berkut.png"; 
 import GoogleLogo from "../../styles/photos/Logo/googleLogo.png";
 
 const Register = () => {
@@ -9,37 +9,37 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordStrength, setPasswordStrength] = useState(""); // Для проверки надежности пароля
-  const navigate = useNavigate(); // Инициализируем useNavigate
+  const [passwordStrength, setPasswordStrength] = useState(""); // Құпия сөздің беріктігін тексеру үшін
+  const navigate = useNavigate(); // useNavigate функциясын инициализациялаймыз
 
   const validateEmail = (email) => {
-    // Регулярное выражение для проверки email
+    // Электрондық поштаны тексеруге арналған регулярлық өрнек
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
   const validatePassword = (password) => {
-    // Проверяем длину пароля и наличие хотя бы одной цифры
+    // Құпия сөздің ұзындығын және кем дегенде бір цифрдың болуын тексеру
     return password.length >= 8 && /\d/.test(password);
   };
 
   const validateName = (name) => {
-    // Проверяем, чтобы имя и фамилия содержали только буквы
+    // Аты мен тегінің тек әріптерден тұруын тексеру
     const nameRegex = /^[a-zA-Zа-яА-Я]+$/;
     return nameRegex.test(name);
   };
 
   const checkPasswordStrength = (password) => {
     if (password.length < 8) {
-      return "Слабый";
+      return "Әлсіз";
     }
     if (password.match(/[a-z]/) && password.match(/[A-Z]/) && password.match(/\d/)) {
       if (password.match(/[!@#$%^&*]/)) {
-        return "Сильный";
+        return "Күшті";
       }
-      return "Средний";
+      return "Орташа";
     }
-    return "Слабый";
+    return "Әлсіз";
   };
 
   const handlePasswordChange = (e) => {
@@ -51,37 +51,37 @@ const Register = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Проверка имени
+    // Аты тексеру
     if (!validateName(firstName)) {
       alert("Атыңыз тек әріптерден тұруы керек!");
       return;
     }
 
-    // Проверка фамилии
+    // Тегі тексеру
     if (!validateName(lastName)) {
       alert("Тегіңіз тек әріптерден тұруы керек!");
       return;
     }
 
-    // Проверка электронной почты
+    // Электрондық поштаны тексеру
     if (!validateEmail(email)) {
-      alert("Электрондық поштаның форматы дұрыс емес!");
+      alert("Электрондық пошта форматы дұрыс емес!");
       return;
     }
 
-    // Проверка пароля
-    if (passwordStrength === "Слабый") {
+    // Құпия сөзді тексеру
+    if (passwordStrength === "Әлсіз") {
       alert("Құпия сөз өте әлсіз!");
       return;
     }
 
-    // Проверка подтверждения пароля
+    // Құпия сөзді растау
     if (password !== confirmPassword) {
       alert("Құпия сөздер сәйкес келмейді!");
       return;
     }
 
-    console.log("Имя:", firstName, "Фамилия:", lastName, "Email:", email, "Password:", password);
+    console.log("Аты:", firstName, "Тегі:", lastName, "Электрондық пошта:", email, "Құпия сөз:", password);
   };
 
   return (
@@ -137,7 +137,7 @@ const Register = () => {
                     onChange={handlePasswordChange}
                     placeholder="Құпия сөзді енгізіңіз"
                   />
-                  <p>Құпия сөздің күші: <strong>{passwordStrength}</strong></p> {/* Показываем силу пароля */}
+                  <p><strong>{passwordStrength}</strong></p> {/* Құпия сөздің беріктігін көрсету */}
                 </div>
                 <div className="form-group">
                   <label htmlFor="confirmPassword">Құпия сөзді растаңыз</label>

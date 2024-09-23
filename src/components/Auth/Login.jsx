@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom'; // Импортируем useNavigate
-import BerkutRes from "../../styles/photos/berkutreg.webp"; 
+import BerkutRes from "../../styles/photos/berkut.png"; 
 import GoogleLogo from "../../styles/photos/Logo/googleLogo.png";
 
 const Login = () => {
